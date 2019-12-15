@@ -5,18 +5,27 @@ import Nav from "./Nav";
 import NotFound from "./NotFound";
 import SearchForm from "./SearchForm";
 import PhotoContainer from "./PhotoContainer";
-import Photo from "./Photo";
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
       photos: [],
-      query: "bus"
+      busPhotos: [],
+      carPhotos: [],
+      trainPhotos: [],
+      query: "bus",
+      loading: true,
+      defaultsLoaded: false
     };
   }
 
   componentDidMount() {
+    //Initial default photo grab
+    this.performSearch("car");
+    this.performSearch("train");
+    this.performSearch("bus");
+
     //Perform a search using default query
     this.performSearch(this.state.query);
   }
@@ -24,7 +33,7 @@ class App extends Component {
   performSearch(query) {
     //Request using my APIKEY and a query from search form
     const request = `https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=${apiKey}&tags=${query}&per_page=24&format=json&nojsoncallback=1`;
-
+    this.setState({ loading: true });
     fetch(request)
       .then(response => {
         if (!response.ok) {
@@ -35,7 +44,45 @@ class App extends Component {
         return response.json();
       })
       .then(data => {
-        this.setState({ photos: data.photos.photo });
+        if (!this.state.defaultsLoaded) {
+          switch (query.toLowerCase()) {
+            case "bus":
+              this.setState({ busPhotos: data.photos.photo, loading: false });
+              break;
+            case "car":
+              this.setState({ carPhotos: data.photos.photo, loading: false });
+              break;
+            case "train":
+              this.setState({ trainPhotos: data.photos.photo, loading: false });
+              break;
+            default:
+              this.setState({ photos: data.photos.photo, loading: false });
+              break;
+          }
+          // this.setState({ photos: data.photos.photo, loading: false });
+          if (
+            this.state.busPhotos.length > 0 &&
+            this.state.carPhotos.length > 0 &&
+            this.state.trainPhotos.length > 0
+          ) {
+            this.setState({ defaultsLoaded: true });
+          }
+        } else {
+          switch (query.toLowerCase()) {
+            case "bus":
+              this.setState({ photos: this.state.busPhotos, loading: false });
+              break;
+            case "car":
+              this.setState({ photos: this.state.carPhotos, loading: false });
+              break;
+            case "train":
+              this.setState({ photos: this.state.trainPhotos, loading: false });
+              break;
+            default:
+              this.setState({ photos: data.photos.photo, loading: false });
+              break;
+          }
+        }
       });
   }
 
@@ -49,8 +96,51 @@ class App extends Component {
       <BrowserRouter>
         <SearchForm search={this.handleSearch} />
         <Nav />
-        {this.state.photos.length > 0 ? (
-          <PhotoContainer photos={this.state.photos} title={this.state.query} />
+        {this.state.loading ? (
+          <p>Loading...</p>
+        ) : this.state.photos.length > 0 ? (
+          <React.Fragment>
+            <Route
+              path="/search/bus"
+              render={routeProps => (
+                <PhotoContainer
+                  {...routeProps}
+                  photos={this.state.busPhotos}
+                  title="bus"
+                />
+              )}
+            />
+            <Route
+              path="/search/car"
+              render={routeProps => (
+                <PhotoContainer
+                  {...routeProps}
+                  photos={this.state.carPhotos}
+                  title="car"
+                />
+              )}
+            />
+            <Route
+              path="/search/train"
+              render={routeProps => (
+                <PhotoContainer
+                  {...routeProps}
+                  photos={this.state.trainPhotos}
+                  title="train"
+                />
+              )}
+            />
+            <Route
+              path="/"
+              render={routeProps => (
+                <PhotoContainer
+                  {...routeProps}
+                  photos={this.state.photos}
+                  title={this.state.query}
+                />
+              )}
+            />
+          </React.Fragment>
         ) : (
           <NotFound />
         )}

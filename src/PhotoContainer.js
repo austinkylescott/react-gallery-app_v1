@@ -3,7 +3,7 @@ import Photo from "./Photo";
 
 class PhotoContainer extends Component {
   render() {
-    let photoData = this.props.photos;
+    const photoData = this.props.photos;
     let photoComponents;
     console.log(photoData);
     return (
