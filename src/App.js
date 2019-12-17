@@ -1,14 +1,16 @@
 import React, { Component } from "react";
 import apiKey from "./config";
-import { BrowserRouter, Route } from "react-router-dom";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 import Nav from "./Nav";
 import NotFound from "./NotFound";
 import SearchForm from "./SearchForm";
 import PhotoContainer from "./PhotoContainer";
+import PageNotFound from "./PageNotFound";
 
 class App extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+
     this.state = {
       photos: [],
       busPhotos: [],
@@ -94,43 +96,58 @@ class App extends Component {
   render() {
     return (
       <BrowserRouter>
-        <SearchForm search={this.handleSearch} />
+        <SearchForm search={this.handleSearch} history={this.props.history} />
         <Nav />
         {this.state.loading ? (
           <p>Loading...</p>
         ) : this.state.photos.length > 0 ? (
-          <React.Fragment>
+          <Switch>
             <Route
-              path="/search/bus"
-              render={routeProps => (
-                <PhotoContainer
-                  {...routeProps}
-                  photos={this.state.busPhotos}
-                  title="bus"
-                />
-              )}
-            />
-            <Route
+              exact
               path="/search/car"
               render={routeProps => (
                 <PhotoContainer
                   {...routeProps}
                   photos={this.state.carPhotos}
-                  title="car"
+                  title={"car"}
                 />
               )}
             />
             <Route
+              exact
+              path="/search/bus"
+              render={routeProps => (
+                <PhotoContainer
+                  {...routeProps}
+                  photos={this.state.busPhotos}
+                  title={"bus"}
+                />
+              )}
+            />
+            <Route
+              exact
               path="/search/train"
               render={routeProps => (
                 <PhotoContainer
                   {...routeProps}
                   photos={this.state.trainPhotos}
-                  title="train"
+                  title={"train"}
                 />
               )}
             />
             <Route
+              exact
+              path="/search/:query"
+              render={routeProps => (
+                <PhotoContainer
+                  {...routeProps}
+                  photos={this.state.photos}
+                  title={this.state.query}
+                />
+              )}
+            />
+            <Route
+              exact
               path="/"
               render={routeProps => (
                 <PhotoContainer
@@ -140,7 +157,8 @@ class App extends Component {
                 />
               )}
             />
-          </React.Fragment>
+            <Route component={PageNotFound} />
+          </Switch>
         ) : (
           <NotFound />
         )}

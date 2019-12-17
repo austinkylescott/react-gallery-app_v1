@@ -2,6 +2,9 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 
 class SearchForm extends Component {
+  constructor(props) {
+    super();
+  }
   state = {
     value: ""
   };
@@ -9,6 +12,7 @@ class SearchForm extends Component {
   handleSubmit = e => {
     e.preventDefault();
     this.props.search(this.state.value);
+    this.props.history.push(`/search/${this.state.value}`);
   };
 
   handleValueChange = e => {
@@ -43,4 +47,4 @@ class SearchForm extends Component {
   }
 }
 
-export default SearchForm;
+export default withRouter(SearchForm);
